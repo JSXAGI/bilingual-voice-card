@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>JA-EN Bilingual Voice Card</title>
+  
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1386D7">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="icon-192.png">
+
+  <style>
+    :root {
+      --bg-gradient-top: #183D82;
+      --bg-gradient-bottom: #1386D7;
+      --accent-cyan: #12B4E2;
+      --accent-cyan-light: #58DFFF;
+      --accent-mint: #13C59C;
+      --accent-mint-light: #45FFD2;
+      --text-dark: #324851;
+      --text-black: #000;
+      --border-gray: #CCC;
+      --accent-orange: #F0A50F;
+      --accent-orange-dark: #D97706;
+      --white: #FFFFFF;
+    }
+
+    body {
+      margin: 0;
+      padding: 16px;
+      background: linear-gradient(180deg, var(--bg-gradient-top) 0%, var(--bg-gradient-bottom) 100%);
+      color: var(--text-dark);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans JP", sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 400px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+    }
+
+    .app-header {
+      text-align: center;
+      margin-bottom: 12px;
+    }
+
+    .app-title {
+      font-size: 20px;
+      font-weight: 900;
+      letter-spacing: -0.025em;
+      color: var(--white);
+      margin: 0;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .title-dot {
+      color: var(--accent-orange);
+      margin: 0 6px;
+    }
+
+    .search-box {
+      width: 100%;
+      padding: 12px 16px;
+      font-size: 14px;
+      border: 2px solid var(--border-gray);
+      background-color: var(--white);
+      color: var(--text-black);
+      border-radius: 16px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      box-sizing: border-box;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .search-box:focus {
+      border-color: var(--accent-cyan-light);
+      box-shadow: 0 0 0 3px rgba(88, 223, 255, 0.2);
+    }
+
+    .voice-selector-zone {
+      display: flex;
+      justify-content: space-between;
+      background-color: rgba(255, 255, 255, 0.15);
+      padding: 4px;
+      border-radius: 14px;
+      margin: 10px 0;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .radio-label {
+      flex: 1;
+      text-align: center;
+      padding: 8px 0;
+      font-size: 13px;
+      font-weight: bold;
+      color: var(--white);
+      cursor: pointer;
+      border-radius: 10px;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+
+    .radio-label input {
+      display: none;
+    }
+
+    .radio-label:has(input:checked) {
+      background-color: var(--white);
+      color: var(--bg-gradient-top);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+    }
+
+    .filter-grid {
+      display: grid;
+      grid-template-cols: repeat(4, 1fr);
+      gap: 6px;
+      margin: 4px 0 16px 0;
+    }
+
+    .btn-filter {
+      padding: 10px 2px;
+      font-size: 11px;
+      font-weight: 700;
+      text-align: center;
+      border-radius: 12px;
+      cursor: pointer;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .btn-filter.active {
+      background-color: var(--accent-cyan);
+      color: var(--white);
+      border: 2px solid var(--accent-cyan);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn-filter.inactive {
+      background-color: var(--white);
+      color: var(--text-dark);
+      border: 2px solid var(--border-gray);
+    }
+
+    .btn-filter.active-shuffle {
+      background-color: var(--accent-orange);
+      color: var(--white);
+      border: 2px solid var(--accent-orange-dark);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn-filter .sub-text {
+      font-size: 8px;
+      font-weight: 400;
+      opacity: 0.9;
+      margin-top: 2px;
+    }
+
+    .main-card {
+      background-color: var(--white);
+      border: 1px solid var(--border-gray);
+      border-radius: 28px;
+      padding: 24px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 360px;
+      box-sizing: border-box;
+    }
+
+    .card-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+    }
+
+    .phrase-id {
+      background-color: rgba(50, 72, 81, 0.1);
+      color: var(--text-dark);
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-family: monospace;
+      font-weight: 700;
+    }
+
+    .phrase-progress {
+      background-color: var(--accent-cyan-light);
+      color: var(--bg-gradient-top);
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-weight: 900;
+    }
+
+    .card-body {
+      text-align: center;
+      margin: 20px 0;
+    }
+
+    .text-english {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-black);
+      line-height: 1.4;
+      margin: 0 0 16px 0;
+    }
+
+    .text-japanese {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-dark);
+      background-color: rgba(69, 255, 210, 0.15);
+      padding: 12px 20px;
+      border-radius: 16px;
+      border: 2px dashed var(--accent-mint);
+      margin: 0 auto;
+      width: 90%;
+      box-sizing: border-box;
+    }
+
+    .btn-speak {
+      width: 100%;
+      background-color: var(--bg-gradient-bottom);
+      color: var(--white);
+      border: none;
+      border-bottom: 4px solid var(--bg-gradient-top);
+      padding: 14px;
+      border-radius: 16px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-sizing: border-box;
+      transition: all 0.1s;
+    }
+
+    .btn-speak:active {
+      transform: scale(0.98);
+    }
+
+    .auto-play-zone {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 14px;
+      font-size: 12px;
+      font-weight: bold;
+      color: var(--text-dark);
+    }
+
+    .switch-label {
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background-color: var(--white);
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 2px solid var(--border-gray);
+    }
+
+    .nav-zone {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 20px;
+      padding-top: 14px;
+      border-top: 2px solid var(--border-gray);
+    }
+
+    .btn-prev {
+      background: none;
+      border: none;
+      color: var(--text-dark);
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      padding: 8px 16px;
+      opacity: 0.7;
+    }
+
+    .btn-prev:hover:not(:disabled) {
+      opacity: 1;
+    }
+
+    .btn-prev:disabled {
+      opacity: 0.2;
+      cursor: not-allowed;
+    }
+
+    .btn-next {
+      background-color: var(--text-dark);
+      border: none;
+      color: var(--white);
+      font-weight: 700;
+      font-size: 13px;
+      border-radius: 12px;
+      padding: 10px 22px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .btn-next:hover:not(:disabled) {
+      background-color: var(--text-black);
+    }
+
+    .btn-next:disabled {
+      background-color: var(--border-gray);
+      color: rgba(255, 255, 255, 0.6);
+      cursor: not-allowed;
+    }
+
+    .app-footer {
+      text-align: center;
+      margin-top: 16px;
+      font-size: 11px;
+      color: var(--white);
+      opacity: 0.8;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="app-container">
+
+    <header class="app-header">
+      <h1 class="app-title">
+        <span class="title-dot">✦</span>JA-EN Bilingual Voice Card<span class="title-dot">✦</span>
+      </h1>
+    </header>
+
+    <div style="width: 100%;">
+      <input type="text" id="search-input" oninput="handleSearch()" placeholder="🔍 キーワードで探す..." class="search-box">
+
+      <div class="voice-selector-zone">
+        <label class="radio-label">
+          <input type="radio" name="voice-lang" value="en-US" checked onchange="handleVoiceLangChange()">
+          <span>🇺🇸 EN (English)</span>
+        </label>
+        <label class="radio-label">
+          <input type="radio" name="voice-lang" value="ja-JP" onchange="handleVoiceLangChange()">
+          <span>🇯🇵 JA (Japanese)</span>
+        </label>
+      </div>
+
+      <div class="filter-grid">
+        <button onclick="filterLength('all')" id="filter-all" class="btn-filter active">
+          <span>すべて</span>
+        </button>
+        <button onclick="filterLength('short')" id="filter-short" class="btn-filter inactive">
+          <span>短め文</span>
+          <span class="sub-text">(1〜4単語)</span>
+        </button>
+        <button onclick="filterLength('long')" id="filter-long" class="btn-filter inactive">
+          <span>長め文</span>
+          <span class="sub-text">(5単語以上)</span>
+        </button>
+        <button onclick="filterLength('shuffle')" id="filter-shuffle" class="btn-filter inactive">
+          <span>🔀ランダム</span>
+          <span class="sub-text">順不乱</span>
+        </button>
+      </div>
+    </div>
+
+    <main class="main-card">
+      <div class="card-meta">
+        <span id="phrase-id" class="phrase-id">---</span>
+        <span id="phrase-progress" class="phrase-progress">- / -</span>
+      </div>
+
+      <div class="card-body">
+        <h2 id="text-english" class="text-english">Loading...</h2>
+        <p id="text-japanese" class="text-japanese"></p>
+      </div>
+
+      <div style="width: 100%;">
+        <button onclick="playVoice()" class="btn-speak">
+          <span>📢</span><span id="speak-btn-text">お手本発音を聴く</span>
+        </button>
+
+        <div class="auto-play-zone">
+          <label class="switch-label">
+            <input type="checkbox" id="auto-next-switch" onchange="handleAutoSwitchChange()">
+            <span>読み上げ後、自動で次のカードへ</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="nav-zone">
+        <button onclick="prevPhrase()" id="btn-prev" class="btn-prev">← 前へ</button>
+        <button onclick="nextPhrase()" id="btn-next" class="btn-next">次へ ➔</button>
+      </div>
+    </main>
+
+    <footer class="app-footer">
+      <span>© JA-EN Bilingual Voice Card Web App</span>
+    </footer>
+
+  </div>
+
+  <script>
+    const rawPhrases = [
+      { "id": "id_001", "english": "What's up?", "japanese": "最近どうよ？" },
+      { "id": "id_002", "english": "Take it easy.", "japanese": "気楽に行こうぜ" },
+      { "id": "id_003", "english": "My mind went blank.", "japanese": "頭が真っ白になっちゃった" },
+      { "id": "id_004", "english": "I'm completely exhausted.", "japanese": "もうクタクタだよ" },
+      { "id": "id_005", "english": "You earned it!", "japanese": "がんばったご褒美だね！" },
+      { "id": "id_006", "english": "All-you-can-eat!", "japanese": "よっしゃ、食べ放題だ！" },
+      { "id": "id_007", "english": "I'll take this one.", "japanese": "これにします" },
+      { "id": "id_008", "english": "You look daydreaming.", "japanese": "ぼーっとしてるね、どうしたの？" },
+      { "id": "id_009", "english": "Wait, which one?", "japanese": "えっ、どれのこと？" },
+      { "id": "id_010", "english": "I'm done for today.", "japanese": "今日はここまで、お疲れ様！" },
+      { "id": "id_011", "english": "You scared me!", "japanese": "うわっ！びっくりしたなぁ！" },
+      { "id": "id_012", "english": "No way!", "japanese": "嘘でしょ！ありえない！" },
+      { "id": "id_013", "english": "I'm on my way.", "japanese": "今、向かってるところ！" },
+      { "id": "id_014", "english": "Can you hear me?", "japanese": "聞こえてる？" },
+      { "id": "id_015", "english": "Never mind.", "japanese": "あ、気にしないで、何でもない！" },
+      { "id": "id_016", "english": "It's on me.", "japanese": "ここは俺が奢るよ" },
+      { "id": "id_017", "english": "That makes sense.", "japanese": "あぁ、なるほどね！納得！" },
+      { "id": "id_018", "english": "Keep it up!", "japanese": "その調子！その意気だよ！" },
+      { "id": "id_019", "english": "I'm counting on you.", "japanese": "頼りにしてるよ、相棒！" },
+      { "id": "id_020", "english": "Long time no see!", "japanese": "久しぶりじゃん！元気だった？" },
+      { "id": "id_021", "english": "What do you mean?", "japanese": "それってどういうこと？" },
+      { "id": "id_022", "english": "I have no idea.", "japanese": "さっぱり分かんないや" },
+      { "id": "id_023", "english": "Just a moment.", "japanese": "ちょっと待ってね" },
+      { "id": "id_024", "english": "How's everything?", "japanese": "調子はどうだい？" },
+      { "id": "id_025", "english": "Sounds good to me.", "japanese": "いいね！そうしよう！" },
+      { "id": "id_026", "english": "It depends.", "japanese": "状況によるかなぁ" },
+      { "id": "id_027", "english": "Are you ready?", "japanese": "準備はバッチリ？" },
+      { "id": "id_028", "english": "I'm looking forward to it.", "japanese": "めちゃくちゃ楽しみにしてる！" },
+      { "id": "id_029", "english": "Take your time.", "japanese": "ゆっくりで大丈夫だよ" },
+      { "id": "id_030", "english": "By the way,", "japanese": "それはそうと、話は変わるけど" },
+      { "id": "id_031", "english": "I see your point.", "japanese": "言い分は分かるよ" },
+      { "id": "id_032", "english": "That's awesome!", "japanese": "最高じゃん！！すごい！" },
+      { "id": "id_033", "english": "Cheer up!", "japanese": "元気出しなよ！" },
+      { "id": "id_034", "english": "I knew it!", "japanese": "やっぱりね！思った通りだ！" },
+      { "id": "id_035", "english": "It's up to you.", "japanese": "君の判断に任せるよ" },
+      { "id": "id_036", "english": "Are you serious?", "japanese": "マジで言ってるの？" },
+      { "id": "id_037", "english": "That's a relief.", "japanese": "あぁ、安心したー！" },
+      { "id": "id_038", "english": "I can't wait!", "japanese": "待ちきれないよ！" },
+      { "id": "id_039", "english": "Good for you!", "japanese": "よかったね！" },
+      { "id": "id_040", "english": "Make yourself at home.", "japanese": "自分の家だと思ってくつろいでね" },
+      { "id": "id_041", "english": "Same as usual.", "japanese": "相変わらずだよ、いつも通り" },
+      { "id": "id_042", "english": "Believe it or not,", "japanese": "信じられないかもしれないけどさ" },
+      { "id": "id_043", "english": "Don't bother.", "japanese": "あ、わざわざやらなくて大丈夫だよ" },
+      { "id": "id_044", "english": "I messed up.", "japanese": "やっちまったー！大失敗！" },
+      { "id": "id_045", "english": "Give it a shot!", "japanese": "だめもとでやってみなよ！" },
+      { "id": "id_046", "english": "You can do it!", "japanese": "君ならできるって！応援してる！" },
+      { "id": "id_047", "english": "That's incredible!", "japanese": "信じられないくらい素晴らしい！" },
+      { "id": "id_048", "english": "Let me see...", "japanese": "ええっと、そうだなあ..." },
+      { "id": "id_049", "english": "I agree with you.", "japanese": "大賛成！私もそう思う" },
+      { "id": "id_050", "english": "No problem at all.", "japanese": "全然問題ないよ！気にしないで" },
+      { "id": "id_051", "english": "What are you up to?", "japanese": "今何してるの？" },
+      { "id": "id_052", "english": "I'll figure it out.", "japanese": "なんとか解決してみせるよ" },
+      { "id": "id_053", "english": "Suit yourself.", "japanese": "好きにすれば？勝手にしなよ" },
+      { "id": "id_054", "english": "You hit the nail on the head.", "japanese": "まさにその通り！正鵠を射てるね" },
+      { "id": "id_055", "english": "Don't sweat it.", "japanese": "くよくよ気にするなよ！" },
+      { "id": "id_056", "english": "I'm kind of busy.", "japanese": "ちょっと今バタバタしてて" },
+      { "id": "id_057", "english": "Let's call it a day.", "japanese": "よし、今日のところは切り上げよう！" },
+      { "id": "id_058", "english": "Speak of the devil!", "japanese": "噂をすれば影が差す、噂の本人が来た！" },
+      { "id": "id_059", "english": "It's a piece of cake.", "japanese": "そんなの朝飯前だよ、お安い御用！" },
+      { "id": "id_060", "english": "I'm in a hurry.", "japanese": "ごめん、今ちょっと急いでるんだ" },
+      { "id": "id_061", "english": "You can't miss it.", "japanese": "（道案内で）すぐ分かりますよ" },
+      { "id": "id_062", "english": "Keep your fingers crossed!", "japanese": "幸運を祈っててね！" },
+      { "id": "id_063", "english": "That's not what I meant.", "japanese": "そういう意味で言ったんじゃないんだ" },
+      { "id": "id_064", "english": "Can you do me a favor?", "japanese": "ちょっとお願いがあるんだけどいい？" },
+      { "id": "id_065", "english": "Better late than never.", "japanese": "遅れても、来ないよりは全然マシさ" },
+      { "id": "id_066", "english": "Get over it.", "japanese": "いつまでも引きずらずに、乗り越えなよ" },
+      { "id": "id_067", "english": "I can't help it.", "japanese": "こればかりは、どうしようもないよ" },
+      { "id": "id_068", "english": "Time flies!", "japanese": "時間が経つのは本当に早いなぁ！" },
+      { "id": "id_069", "english": "It's out of the question.", "japanese": "論外だね、話にならないよ" },
+      { "id": "id_070", "english": "Let's get down to business.", "japanese": "よし、本題に入ろうか" },
+      { "id": "id_071", "english": "I'm flat broke.", "japanese": "今、財布が完全にすっからかんなの" },
+      { "id": "id_072", "english": "Don't judge a book by its cover.", "japanese": "人を見かけで判断しちゃだめだよ" },
+      { "id": "id_073", "english": "Let's play it by ear.", "japanese": "その場の行き当たりばったりで行こう" },
+      { "id": "id_074", "english": "You're pulling my leg!", "japanese": "またまた、からかってるんでしょ？" },
+      { "id": "id_075", "english": "So far, so good.", "japanese": "今のところ、順調そのものだよ" },
+      { "id": "id_076", "english": "Cross my heart!", "japanese": "神に誓って絶対に嘘じゃないよ！" },
+      { "id": "id_077", "english": "It's written all over your face.", "japanese": "顔に全部書いてあるよ（バレバレ）" },
+      { "id": "id_078", "english": "Let's wrap things up.", "japanese": "そろそろ終わりにしよう、まとめよう" },
+      { "id": "id_079", "english": "What a small world!", "japanese": "世間って本当に狭いなぁ！" },
+      { "id": "id_080", "english": "I'm not feeling well.", "japanese": "ちょっと体調が良くないんだ" },
+      { "id": "id_081", "english": "Go for it!", "japanese": "突っ走れ！やっちゃえ！" },
+      { "id": "id_082", "english": "I'll pass this time.", "japanese": "ごめん、今回は遠慮しとくね" },
+      { "id": "id_083", "english": "Are you following me?", "japanese": "話、ついてこれてる？" },
+      { "id": "id_084", "english": "You look sharp today!", "japanese": "今日、バシッとキマっててカッコいいね！" },
+      { "id": "id_085", "english": "That's beside the point.", "japanese": "それは今、関係ない話（話がそれてる）" },
+      { "id": "id_086", "english": "It cost an arm and a leg.", "japanese": "目玉が飛び出るほど高かったんだよ" },
+      { "id": "id_087", "english": "Don't take it personally.", "japanese": "悪気はないんだから、怒らないでね" },
+      { "id": "id_088", "english": "I'm on the fence.", "japanese": "どっちにするか、まだ迷ってるんだ" },
+      { "id": "id_089", "english": "It's better than nothing.", "japanese": "無いよりは、よっぽどマシさ" },
+      { "id": "id_090", "english": "Break a leg!", "japanese": "がんばって！成功を祈る！" },
+      { "id": "id_091", "english": "Can I take a rain check?", "japanese": "また別の機会に誘ってくれる？" },
+      { "id": "id_092", "english": "I'm all ears.", "japanese": "うん、興味津々！話を聞かせて！" },
+      { "id": "id_093", "english": "Don't give up!", "japanese": "諦めるな！最後まで踏ん張ろう！" },
+      { "id": "id_094", "english": "That's none of your business.", "japanese": "あなたには関係ないでしょ（ほっといて）" },
+      { "id": "id_095", "english": "Let it go.", "japanese": "もう済んだことさ、水に流そう" },
+      { "id": "id_096", "english": "It's hard to say.", "japanese": "なんとも言えないなぁ、難しいところ" },
+      { "id": "id_097", "english": "I didn't mean to hurt you.", "japanese": "傷つけるつもりじゃなかったんだ、ごめん" },
+      { "id": "id_098", "english": "What are you waiting for?", "japanese": "何をためらってるの？早くやりなよ！" },
+      { "id": "id_099", "english": "Everything will be fine.", "japanese": "何があっても、最後はきっと大丈夫さ" },
+      { "id": "id_100", "english": "OK Corral!", "japanese": "オーケー牧場！バッチリだ！！" }
+    ];
+
+    let currentList = [...rawPhrases];
+    let currentIndex = 0;
+    let currentLengthFilter = 'all';
+    let currentSearchQuery = '';
+
+    function updateUI() {
+      const item = currentList[currentIndex];
+
+      if (!item) {
+        document.getElementById("phrase-id").innerText = "---";
+        document.getElementById("text-english").innerText = "見つかりませんでした 🔍";
+        document.getElementById("text-japanese").innerText = "";
+        document.getElementById("phrase-progress").innerText = "0 / 0";
+        document.getElementById("btn-prev").disabled = true;
+        document.getElementById("btn-next").disabled = true;
+        return;
+      }
+
+      document.getElementById("phrase-id").innerText = item.id;
+      document.getElementById("text-english").innerText = item.english;
+      document.getElementById("text-japanese").innerText = item.japanese;
+      document.getElementById("phrase-progress").innerText = `${currentIndex + 1} / ${currentList.length}`;
+
+      document.getElementById("btn-prev").disabled = (currentIndex === 0);
+      document.getElementById("btn-next").disabled = (currentIndex === currentList.length - 1);
+    }
+
+    function nextPhrase() {
+      if (currentIndex < currentList.length - 1) {
+        currentIndex++;
+        updateUI();
+        if (document.getElementById("auto-next-switch").checked) {
+          playVoice();
+        }
+      } else {
+        document.getElementById("auto-next-switch").checked = false;
+      }
+    }
+
+    function prevPhrase() {
+      if (currentIndex > 0) {
+        currentIndex--;
+        updateUI();
+      }
+    }
+
+    function applyFilters() {
+      if (currentLengthFilter !== 'shuffle') {
+        currentList = [...rawPhrases];
+      }
+
+      currentList = currentList.filter(item => {
+        const matchesSearch =
+          item.english.toLowerCase().includes(currentSearchQuery.toLowerCase()) ||
+          item.japanese.includes(currentSearchQuery);
+
+        const wordCount = item.english.split(' ').length;
+        let matchesLength = true;
+        if (currentLengthFilter === 'short') matchesLength = (wordCount <= 4);
+        if (currentLengthFilter === 'long') matchesLength = (wordCount > 4);
+
+        return matchesSearch && matchesLength;
+      });
+
+      if (currentLengthFilter === 'shuffle') {
+        for (let i = currentList.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [currentList[i], currentList[j]] = [currentList[j], currentList[i]];
+        }
+      }
+
+      currentIndex = 0;
+      updateUI();
+    }
+
+    function handleSearch() {
+      currentSearchQuery = document.getElementById("search-input").value;
+      applyFilters();
+    }
+
+    function filterLength(type) {
+      currentLengthFilter = type;
+      ['all', 'short', 'long', 'shuffle'].forEach(t => {
+        const btn = document.getElementById(`filter-${t}`);
+        if (!btn) return;
+        if (t === type) {
+          if (t === 'shuffle') {
+            btn.className = "btn-filter active-shuffle";
+          } else {
+            btn.className = "btn-filter active";
+          }
+        } else {
+          btn.className = "btn-filter inactive";
+        }
+      });
+      applyFilters();
+    }
+
+    function playVoice() {
+      const item = currentList[currentIndex];
+      if (!item || !('speechSynthesis' in window)) return;
+
+      window.speechSynthesis.cancel();
+
+      const selectedLang = document.querySelector('input[name="voice-lang"]:checked').value;
+      const textToSpeak = (selectedLang === 'en-US') ? item.english : item.japanese;
+      
+      const utterance = new SpeechSynthesisUtterance(textToSpeak);
+      utterance.lang = selectedLang;
+      utterance.rate = (selectedLang === 'en-US') ? 0.88 : 1.0;
+
+      utterance.onend = function (event) {
+        const isAutoChecked = document.getElementById("auto-next-switch").checked;
+        if (isAutoChecked) {
+          setTimeout(() => {
+            nextPhrase();
+          }, 600);
+        }
+      };
+
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function handleVoiceLangChange() {
+      const selectedLang = document.querySelector('input[name="voice-lang"]:checked').value;
+      const btnText = document.getElementById("speak-btn-text");
+      if(selectedLang === 'en-US') {
+        btnText.innerText = "お手本発音を聴く (English)";
+      } else {
+        btnText.innerText = "日本語の音声を聴く (Japanese)";
+      }
+      
+      if (document.getElementById("auto-next-switch").checked) {
+        playVoice();
+      }
+    }
+
+    function handleAutoSwitchChange() {
+      const isChecked = document.getElementById("auto-next-switch").checked;
+      if (isChecked) {
+        playVoice();
+      } else {
+        if ('speechSynthesis' in window) {
+          window.speechSynthesis.cancel();
+        }
+      }
+    }
+
+    // 🚀 PWAサービスワーカーの自動登録スクリプト
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg => console.log('Service Worker registered!', reg))
+          .catch(err => console.error('Service Worker registration failed...', err));
+      });
+    }
+
+    window.onload = function () {
+      updateUI();
+      handleVoiceLangChange();
+    };
+  </script>
+</body>
+
+</html>
