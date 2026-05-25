@@ -276,10 +276,12 @@
       display: flex;
       align-items: center;
       gap: 6px;
-      background-color: var(--white);
-      padding: 6px 14px;
+      background: linear-gradient(135deg, #ffffff 0%, rgba(19, 197, 156, 0.15) 100%);
+      padding: 8px 16px;
       border-radius: 20px;
-      border: 2px solid var(--border-gray);
+      border: 2px solid var(--accent-mint);
+      box-shadow: 0 2px 6px rgba(19, 197, 156, 0.1);
+      transition: all 0.2s;
     }
 
     .nav-zone {
@@ -311,20 +313,21 @@
       cursor: not-allowed;
     }
 
-    .btn-next {
-      background-color: var(--text-dark);
+.btn-next {
+      background: linear-gradient(135deg, var(--accent-orange) 0%, var(--accent-orange-dark) 100%);
       border: none;
       color: var(--white);
-      font-weight: 700;
+      font-weight: 900;
       font-size: 13px;
       border-radius: 12px;
       padding: 10px 22px;
       cursor: pointer;
-      transition: background-color 0.2s;
+      box-shadow: 0 2px 4px rgba(217, 119, 6, 0.3);
+      transition: all 0.2s;
     }
 
     .btn-next:hover:not(:disabled) {
-      background-color: var(--text-black);
+      filter: brightness(1.1);
     }
 
     .btn-next:disabled {
@@ -405,7 +408,7 @@
         <div class="auto-play-zone">
           <label class="switch-label">
             <input type="checkbox" id="auto-next-switch" onchange="handleAutoSwitchChange()">
-            <span>読み上げ後、自動で次のカードへ</span>
+            <span>🔀 英日フレーズ連続交互読み上げ</span>
           </label>
         </div>
       </div>
@@ -624,25 +627,47 @@
       applyFilters();
     }
 
-    function playVoice() {
+function playVoice() {
       const item = currentList[currentIndex];
       if (!item || !('speechSynthesis' in window)) return;
 
+      // 現在の音声を一度クリア
       window.speechSynthesis.cancel();
 
-      const selectedLang = document.querySelector('input[name="voice-lang"]:checked').value;
-      const textToSpeak = (selectedLang === 'en-US') ? item.english : item.japanese;
+      const isAutoChecked = document.getElementById("auto-next-switch").checked;
+      
+      // ★【ここが本当の修正です！】
+      // 自動連動チェックがONなら、上のボタンの設定を無視して、強制的に「英語」からスタート。
+      // チェックがOFF（単発モード）なら、上のボタンで選ばれている言語（英語か日本語）をそのまま鳴らす。
+      const startLang = isAutoChecked ? 'en-US' : document.querySelector('input[name="voice-lang"]:checked').value;
+      const textToSpeak = (startLang === 'en-US') ? item.english : item.japanese;
       
       const utterance = new SpeechSynthesisUtterance(textToSpeak);
-      utterance.lang = selectedLang;
-      utterance.rate = (selectedLang === 'en-US') ? 0.88 : 1.0;
+      utterance.lang = startLang;
+      utterance.rate = (startLang === 'en-US') ? 0.88 : 1.0;
 
+      // 音声が終了したときの処理
       utterance.onend = function (event) {
-        const isAutoChecked = document.getElementById("auto-next-switch").checked;
-        if (isAutoChecked) {
+        // ★【ここも修正ポイント！】
+        // 自動連動チェックがON、かつ、今流れたのが「英語」だった場合のみ、日本語へリレーする。
+        // チェックがOFFのときは、ここで完全に終了（単発再生）します。
+        if (isAutoChecked && startLang === 'en-US') {
           setTimeout(() => {
-            nextPhrase();
-          }, 600);
+            const jaUtterance = new SpeechSynthesisUtterance(item.japanese);
+            jaUtterance.lang = 'ja-JP';
+            jaUtterance.rate = 1.0;
+
+            // 日本語も話し終わったら、次のカードへバトンを渡す
+            jaUtterance.onend = function () {
+              if (document.getElementById("auto-next-switch").checked) {
+                setTimeout(() => {
+                  nextPhrase();
+                }, 800); // 日本語が終わってから次のカードへ進むまでの余韻
+              }
+            };
+            
+            window.speechSynthesis.speak(jaUtterance);
+          }, 400); // 英語と日本語の間の間隔
         }
       };
 
